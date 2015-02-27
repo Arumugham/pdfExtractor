@@ -1,0 +1,7 @@
+/run/media/arumugham/Office/Education/Project Mango/Development/pdfExtrator/pdfExtrator/obj/x86/Debug/.NETFramework,Version=v4.5.AssemblyAttribute.cs
+/run/media/arumugham/Office/Education/Project Mango/Development/pdfExtrator/pdfExtrator/bin/Debug/pdfExtrator.exe.mdb
+/run/media/arumugham/Office/Education/Project Mango/Development/pdfExtrator/pdfExtrator/bin/Debug/pdfExtrator.exe
+/run/media/arumugham/Office/Education/Project Mango/Development/pdfExtrator/pdfExtrator/obj/x86/Debug/pdfExtrator.exe
+/run/media/arumugham/Office/Education/Project Mango/Development/pdfExtrator/pdfExtrator/obj/x86/Debug/pdfExtrator.exe.mdb
+/run/media/arumugham/Office/Education/Project Mango/Development/pdfExtrator/pdfExtrator/bin/Debug/PdfSharp.Charting.dll
+/run/media/arumugham/Office/Education/Project Mango/Development/pdfExtrator/pdfExtrator/bin/Debug/PdfSharp.dll
