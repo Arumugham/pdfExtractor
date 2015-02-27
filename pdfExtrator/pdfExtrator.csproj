@@ -31,11 +31,14 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="PdfSharp.Charting">
-      <HintPath>..\..\Libraries\PDFsharp-MigraDocFoundation-Assemblies-1_32\GDI+\PdfSharp.Charting.dll</HintPath>
+    <Reference Include="itextsharp">
+      <HintPath>lib\itextsharp.dll</HintPath>
     </Reference>
-    <Reference Include="PdfSharp">
-      <HintPath>..\..\Libraries\PDFsharp-MigraDocFoundation-Assemblies-1_32\GDI+\PdfSharp.dll</HintPath>
+    <Reference Include="itextsharp.pdfa">
+      <HintPath>lib\itextsharp.pdfa.dll</HintPath>
+    </Reference>
+    <Reference Include="itextsharp.xtra">
+      <HintPath>lib\itextsharp.xtra.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
