@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Collections.Generic;
 using iTextSharp.text.pdf;
 using iTextSharp.text.pdf.parser;
 using iTextSharp.text;
@@ -9,15 +10,71 @@ using System.Text.RegularExpressions;
 
 namespace pdfExtrator
 {
+	public class Person
+	{
+		private string name = string.Empty;
+		private string age = string.Empty;
+		private string sex = string.Empty;
+		private string address = string.Empty;
+		public string Name
+		{
+			get
+			{
+				return this.name;
+			}
+			set
+			{
+				this.name = value;
+			}
+		}
+		public string Age
+		{
+			get
+			{
+				return this.age;
+			}
+			set
+			{
+				this.age = value;
+			}
+		}
+		public string Sex
+		{
+			get 
+			{
+				return this.sex;
+			}
+			set
+			{
+				this.sex = value;
+			}
+		}
+		public string Address
+		{
+			get
+			{
+				return this.address;
+			}
+			set
+			{
+				this.address = value;
+			}
+		}
+	}
 	class MainClass
 	{
+		private static List<Person> people = new List<Person>();
 		public static void Main (string[] args)
 		{
-			Console.WriteLine ("Hello World!");
-			Console.WriteLine (Directory.GetCurrentDirectory());
 			//Console.WriteLine(testPDF("../../docs/test2.pdf"));
-			Console.WriteLine(testsearcharea("../../docs/testdata.pdf"));
-
+			Person data = new Person();
+			data.Name = "Name";
+			data.Age = "Age";
+			data.Address = "Address";
+			data.Sex = "Sex";
+			people.Add(data);
+			testsearcharea("../../docs/testdata.pdf");
+			CreatingCsvFiles();
 			//Console.WriteLine(testStringSearch);
 			//Console.WriteLine(ExtractTextFromPdf("../../docs/testdata.pdf"));
 			Console.ReadLine();
@@ -76,7 +133,7 @@ namespace pdfExtrator
 			return St.Substring(pFrom, pTo - pFrom);
 		}
 
-		public static string testsearcharea(string path)
+		public static void testsearcharea(string path)
 		{
 			// In this example, I'll declare a pageNumber integer variable to 
 			// only capture text from the page I'm interested in
@@ -124,12 +181,57 @@ namespace pdfExtrator
 			}
 			string str = text.ToString();
 			string[] lines = str.Split(new string[] { "\r\n", "\n" }, StringSplitOptions.None);
-			foreach(string test in lines)
+			//bool flag = false;
+			Person p = new Person();
+			string tName = "வாக்காளர் ெபயர் : ";
+			string tAge = "வயது :  ";
+			string tAddress = "திய /பைழய வட்டு எண் : ";
+			string tMale = "இனம் : ஆண்";
+			string tFemale = "இனம் : ெபண்";
+			string temp = string.Empty;
+			foreach(string line in lines)
 			{
-				Console.WriteLine("test-->"+ test);
+				if(line.Contains(tName))
+				{
+					p.Name = line.Replace(tName, string.Empty);
+				}
+				else if(line.Contains(tAddress))
+				{
+					p.Address = line.Replace(tAddress, string.Empty);
+				}
+				else if(line.Contains(tAge))
+				{
+					temp = string.Empty;
+					if(line.Contains(tMale))
+					{
+						p.Sex = "M";
+						temp = line.Replace(tMale, string.Empty);
+					}
+					else if(line.Contains(tFemale))
+					{
+						p.Sex = "F";
+						temp = line.Replace(tFemale, string.Empty);
+					}
+					p.Age = temp.Replace(tAge, string.Empty);
+					people.Add(p);
+					p = new Person();
+				}
+				Console.WriteLine("test-->"+ line);
 			}
-			// You'll do something else with it, here I write it to a console window
-			return text.ToString();
+		}
+
+		public static void CreatingCsvFiles()
+		{
+			string filePath = "../../docs/" + "test2.csv";
+			if (!File.Exists(filePath))
+			{
+				File.Create(filePath).Close();
+			}
+			string delimiter = ",";
+			StringBuilder sb = new StringBuilder();
+			foreach(Person person in people)
+				sb.AppendLine(string.Join(delimiter, new string[]{person.Name,person.Age,person.Sex,person.Address}));
+			File.AppendAllText(filePath, sb.ToString());
 		}
 	}
 }
