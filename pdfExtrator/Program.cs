@@ -12,10 +12,22 @@ namespace pdfExtrator
 {
 	public class Person
 	{
+		private string id = string.Empty;
 		private string name = string.Empty;
 		private string age = string.Empty;
 		private string sex = string.Empty;
 		private string address = string.Empty;
+		public string ID
+		{
+			get
+			{
+				return this.id;
+			}
+			set
+			{
+				this.id = value; 
+			}
+		}
 		public string Name
 		{
 			get
@@ -68,13 +80,15 @@ namespace pdfExtrator
 		{
 			//Console.WriteLine(testPDF("../../docs/test2.pdf"));
 			Person data = new Person();
+			data.ID = "UniqueID";
 			data.Name = "Name";
 			data.Age = "Age";
 			data.Address = "Address";
 			data.Sex = "Sex";
 			people.Add(data);
-			testsearcharea("../../docs/testdata.pdf");
-			CreatingCsvFiles();
+			int pageNumber = 3;
+			testsearcharea(pageNumber ,"../../docs/testdata.pdf");
+			CreatingCsvFile();
 			//Console.WriteLine(testStringSearch);
 			//Console.WriteLine(ExtractTextFromPdf("../../docs/testdata.pdf"));
 			Console.ReadLine();
@@ -133,16 +147,9 @@ namespace pdfExtrator
 			return St.Substring(pFrom, pTo - pFrom);
 		}
 
-		public static void testsearcharea(string path)
+		public static void testsearcharea(int pageNumber, string path)
 		{
-			// In this example, I'll declare a pageNumber integer variable to 
-			// only capture text from the page I'm interested in
-			int pageNumber = 3;
-
 			var text = new StringBuilder();
-
-			// The PdfReader object implements IDisposable.Dispose, so you can
-			// wrap it in the using keyword to automatically dispose of it
 			using (var pdfReader = new PdfReader(path))
 			{
 				float distanceInPixelsFromLeft = 30;
@@ -153,35 +160,61 @@ namespace pdfExtrator
 				float width = 190;
 				float height = 700;
 
-				var rect = new System.util.RectangleJ(
-					distanceInPixelsFromLeft,
-					distanceInPixelsFromBottom, 
-					width, 
-					height);
-
+//				var rect = new System.util.RectangleJ(
+//					distanceInPixelsFromLeft,
+//					distanceInPixelsFromBottom, 
+//					width, 
+//					height);
+//				var rect1 = new System.util.RectangleJ(
+//					distanceInPixelsFromLeft + width * 1,
+//					distanceInPixelsFromBottom, 
+//					width, 
+//					height);
+//				var rect2 = new System.util.RectangleJ(
+//					distanceInPixelsFromLeft + width * 2,
+//					distanceInPixelsFromBottom, 
+//					width, 
+//					height);
+				List<System.util.RectangleJ > rectList = new List<System.util.RectangleJ>(){
+					new System.util.RectangleJ(
+						distanceInPixelsFromLeft,
+						distanceInPixelsFromBottom, 
+						width, 
+						height),
+					new System.util.RectangleJ(
+						distanceInPixelsFromLeft + width - 10,
+						distanceInPixelsFromBottom, 
+						width, 
+						height),
+					new System.util.RectangleJ(
+						distanceInPixelsFromLeft + width * 2,
+						distanceInPixelsFromBottom, 
+						width, 
+						height)
+				};
 				var filters = new RenderFilter[1];
-				filters[0] = new RegionTextRenderFilter(rect);
+				foreach (System.util.RectangleJ rect in rectList)
+				{
+					filters[0] = new RegionTextRenderFilter(rect);
+					ITextExtractionStrategy strategy =
+						new FilteredTextRenderListener(
+							new LocationTextExtractionStrategy(), 
+							filters);
 
-				ITextExtractionStrategy strategy =
-					new FilteredTextRenderListener(
-						new LocationTextExtractionStrategy(), 
-						filters);
-
-				var currentText = PdfTextExtractor.GetTextFromPage(
-					pdfReader, 
-					pageNumber, 
-					strategy);
-				currentText =
-					Encoding.UTF8.GetString(Encoding.Convert(
-						Encoding.Default,
-						Encoding.UTF8,
-						Encoding.Default.GetBytes(currentText)));
-
-				text.Append(currentText);
+					var currentText = PdfTextExtractor.GetTextFromPage(
+						pdfReader, 
+						pageNumber, 
+						strategy);
+					currentText =
+						Encoding.UTF8.GetString(Encoding.Convert(
+							Encoding.Default,
+							Encoding.UTF8,
+							Encoding.Default.GetBytes(currentText)));
+					text.Append(currentText);
+				}
 			}
 			string str = text.ToString();
 			string[] lines = str.Split(new string[] { "\r\n", "\n" }, StringSplitOptions.None);
-			//bool flag = false;
 			Person p = new Person();
 			string tName = "வாக்காளர் ெபயர் : ";
 			string tAge = "வயது :  ";
@@ -189,9 +222,17 @@ namespace pdfExtrator
 			string tMale = "இனம் : ஆண்";
 			string tFemale = "இனம் : ெபண்";
 			string temp = string.Empty;
+			string[] tID = {"IBU","MPR","TN/" };
+			StringBuilder strb = new StringBuilder();
 			foreach(string line in lines)
 			{
-				if(line.Contains(tName))
+				Console.WriteLine("test-->" + line);
+				strb.AppendLine(line);
+				if(line.Contains(tID[0]) || line.Contains(tID[1]) || line.Contains(tID[2]))
+				{
+					p.ID = line.ToString();
+				}
+				else if(line.Contains(tName))
 				{
 					p.Name = line.Replace(tName, string.Empty);
 				}
@@ -216,11 +257,11 @@ namespace pdfExtrator
 					people.Add(p);
 					p = new Person();
 				}
-				Console.WriteLine("test-->"+ line);
 			}
+			CreatingTextFile(strb);
 		}
 
-		public static void CreatingCsvFiles()
+		public static void CreatingCsvFile()
 		{
 			string filePath = "../../docs/" + "test2.csv";
 			if (!File.Exists(filePath))
@@ -230,7 +271,16 @@ namespace pdfExtrator
 			string delimiter = ",";
 			StringBuilder sb = new StringBuilder();
 			foreach(Person person in people)
-				sb.AppendLine(string.Join(delimiter, new string[]{person.Name,person.Age,person.Sex,person.Address}));
+				sb.AppendLine(string.Join(delimiter, new string[]{person.ID, person.Name,person.Age,person.Sex,person.Address}));
+			File.AppendAllText(filePath, sb.ToString());
+		}
+		public static void CreatingTextFile(StringBuilder sb)
+		{
+			string filePath = "../../docs/" + "pdfoutput.txt";
+			if (!File.Exists(filePath))
+			{
+				File.Create(filePath).Close();
+			}
 			File.AppendAllText(filePath, sb.ToString());
 		}
 	}
