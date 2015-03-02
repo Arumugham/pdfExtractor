@@ -86,8 +86,8 @@ namespace pdfExtrator
 			data.Address = "Address";
 			data.Sex = "Sex";
 			people.Add(data);
-			int pageNumber = 3;
-			testsearcharea(pageNumber ,"../../docs/testdata.pdf");
+			//int pageNumber = 3;
+			testsearcharea("../../docs/testdata2.pdf");
 			CreatingCsvFile();
 			//Console.WriteLine(testStringSearch);
 			//Console.WriteLine(ExtractTextFromPdf("../../docs/testdata.pdf"));
@@ -147,34 +147,15 @@ namespace pdfExtrator
 			return St.Substring(pFrom, pTo - pFrom);
 		}
 
-		public static void testsearcharea(int pageNumber, string path)
+		public static void testsearcharea(string path)
 		{
 			var text = new StringBuilder();
 			using (var pdfReader = new PdfReader(path))
 			{
 				float distanceInPixelsFromLeft = 30;
-				//float distanceInPixelsFromBottom = 710;
 				float distanceInPixelsFromBottom = 70;
-				//float width = 190;
-				//float height = 70;
 				float width = 190;
 				float height = 700;
-
-//				var rect = new System.util.RectangleJ(
-//					distanceInPixelsFromLeft,
-//					distanceInPixelsFromBottom, 
-//					width, 
-//					height);
-//				var rect1 = new System.util.RectangleJ(
-//					distanceInPixelsFromLeft + width * 1,
-//					distanceInPixelsFromBottom, 
-//					width, 
-//					height);
-//				var rect2 = new System.util.RectangleJ(
-//					distanceInPixelsFromLeft + width * 2,
-//					distanceInPixelsFromBottom, 
-//					width, 
-//					height);
 				List<System.util.RectangleJ > rectList = new List<System.util.RectangleJ>(){
 					new System.util.RectangleJ(
 						distanceInPixelsFromLeft,
@@ -193,42 +174,46 @@ namespace pdfExtrator
 						height)
 				};
 				var filters = new RenderFilter[1];
-				foreach (System.util.RectangleJ rect in rectList)
+				for (int pageNumber = 1; pageNumber <= pdfReader.NumberOfPages; pageNumber++)
 				{
-					filters[0] = new RegionTextRenderFilter(rect);
-					ITextExtractionStrategy strategy =
-						new FilteredTextRenderListener(
-							new LocationTextExtractionStrategy(), 
-							filters);
+					foreach (System.util.RectangleJ rect in rectList)
+					{
+						filters[0] = new RegionTextRenderFilter(rect);
+						ITextExtractionStrategy strategy =
+							new FilteredTextRenderListener(
+								new LocationTextExtractionStrategy(), 
+								filters);
 
-					var currentText = PdfTextExtractor.GetTextFromPage(
-						pdfReader, 
-						pageNumber, 
-						strategy);
-					currentText =
-						Encoding.UTF8.GetString(Encoding.Convert(
-							Encoding.Default,
-							Encoding.UTF8,
-							Encoding.Default.GetBytes(currentText)));
-					text.Append(currentText);
+						var currentText = PdfTextExtractor.GetTextFromPage(
+							pdfReader, 
+							pageNumber, 
+							strategy);
+						currentText =
+							Encoding.UTF8.GetString(Encoding.Convert(
+								Encoding.Default,
+								Encoding.UTF8,
+								Encoding.Default.GetBytes(currentText)));
+						text.Append(currentText);
+					}
 				}
 			}
 			string str = text.ToString();
+			Console.WriteLine("<--" + str + "-->");
 			string[] lines = str.Split(new string[] { "\r\n", "\n" }, StringSplitOptions.None);
 			Person p = new Person();
 			string tName = "வாக்காளர் ெபயர் : ";
-			string tAge = "வயது :  ";
+			string[] tAge = {"வயது :", "வய :" };
 			string tAddress = "திய /பைழய வட்டு எண் : ";
 			string tMale = "இனம் : ஆண்";
 			string tFemale = "இனம் : ெபண்";
 			string temp = string.Empty;
-			string[] tID = {"IBU","MPR","TN/" };
+			string[] tID = {"IBU","MPR","TN/","ROG","HBW"};
 			StringBuilder strb = new StringBuilder();
 			foreach(string line in lines)
 			{
 				Console.WriteLine("test-->" + line);
 				strb.AppendLine(line);
-				if(line.Contains(tID[0]) || line.Contains(tID[1]) || line.Contains(tID[2]))
+				if(line.Contains(tID[0]) || line.Contains(tID[1]) || line.Contains(tID[2]) || line.Contains(tID[3]) || line.Contains(tID[4]) )
 				{
 					p.ID = line.ToString();
 				}
@@ -240,7 +225,7 @@ namespace pdfExtrator
 				{
 					p.Address = line.Replace(tAddress, string.Empty);
 				}
-				else if(line.Contains(tAge))
+				else if(line.Contains(tAge[0]))
 				{
 					temp = string.Empty;
 					if(line.Contains(tMale))
@@ -253,17 +238,24 @@ namespace pdfExtrator
 						p.Sex = "F";
 						temp = line.Replace(tFemale, string.Empty);
 					}
-					p.Age = temp.Replace(tAge, string.Empty);
+					p.Age = temp.Replace(tAge[0], string.Empty);
+					people.Add(p);
+					p = new Person();
+				}
+				else if(line.Contains(tAge[1]))
+				{
+					p.Age = line.Replace(tAge[1], string.Empty);
 					people.Add(p);
 					p = new Person();
 				}
 			}
+			Console.WriteLine("Count of records:" +people.Count);
 			CreatingTextFile(strb);
 		}
 
 		public static void CreatingCsvFile()
 		{
-			string filePath = "../../docs/" + "test2.csv";
+			string filePath = "../../docs/" + "test3.csv";
 			if (!File.Exists(filePath))
 			{
 				File.Create(filePath).Close();
@@ -276,7 +268,7 @@ namespace pdfExtrator
 		}
 		public static void CreatingTextFile(StringBuilder sb)
 		{
-			string filePath = "../../docs/" + "pdfoutput.txt";
+			string filePath = "../../docs/" + "pdfoutput3.txt";
 			if (!File.Exists(filePath))
 			{
 				File.Create(filePath).Close();
